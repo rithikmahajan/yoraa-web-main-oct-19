@@ -180,14 +180,9 @@ export const signInWithGoogle = async () => {
     // 2. Get Firebase ID token
     const firebaseToken = await user.getIdToken();
 
-    // 3. Send to backend for social login
+    // 3. Send to backend for social login (backend only needs idToken)
     const response = await authAPI.socialLogin({
-      provider: 'google',
-      firebaseToken: firebaseToken,
-      firebaseUid: user.uid,
-      email: user.email,
-      name: user.displayName,
-      photoURL: user.photoURL
+      idToken: firebaseToken
     });
 
     // 4. Store backend token and user data
@@ -225,14 +220,9 @@ export const signInWithApple = async () => {
     // 2. Get Firebase ID token
     const firebaseToken = await user.getIdToken();
 
-    // 3. Send to backend for social login
+    // 3. Send to backend for social login (backend only needs idToken)
     const response = await authAPI.socialLogin({
-      provider: 'apple',
-      firebaseToken: firebaseToken,
-      firebaseUid: user.uid,
-      email: user.email,
-      name: user.displayName,
-      photoURL: user.photoURL
+      idToken: firebaseToken
     });
 
     // 4. Store backend token and user data
@@ -294,22 +284,131 @@ export const logout = async () => {
 };
 
 /**
- * Send password reset email
- * @param {string} email - User's email address
+ * Verify OTP (for phone authentication or email verification)
+ * @param {Object} data - OTP verification data
+ * @param {string} data.phone - Phone number or email
+ * @param {string} data.otp - OTP code
  */
-export const resetPassword = async (email) => {
+export const verifyOTP = async (data) => {
   try {
-    // Send password reset email via Firebase
-    await firebaseSendPasswordReset(auth, email);
+    const response = await authAPI.verifyOTP({
+      phone: data.phone || data.email,
+      otp: data.otp
+    });
+
+    // Store backend token and user data if login successful
+    if (response.data?.data?.token) {
+      setAuthToken(response.data.data.token);
+    }
+    if (response.data?.data?.user) {
+      setUserData(response.data.data.user);
+    }
 
     return {
       success: true,
-      message: 'Password reset email sent!'
+      user: response.data?.data?.user,
+      message: response.data?.message || 'OTP verified successfully!',
+      data: response.data?.data
     };
   } catch (error) {
-    console.error('Password reset error:', error);
+    console.error('OTP verification error:', error);
     throw {
-      message: error.message || 'Failed to send password reset email',
+      message: error.response?.data?.message || error.message || 'OTP verification failed',
+      code: error.code
+    };
+  }
+};
+
+/**
+ * Resend OTP
+ * @param {Object} data - Phone/Email data
+ * @param {string} data.phone - Phone number or email to send OTP
+ */
+export const resendOTP = async (data) => {
+  try {
+    const response = await authAPI.resendOTP({
+      phone: data.phone || data.email
+    });
+
+    return {
+      success: true,
+      message: response.data?.message || 'OTP sent successfully!',
+      data: response.data?.data
+    };
+  } catch (error) {
+    console.error('Resend OTP error:', error);
+    throw {
+      message: error.response?.data?.message || error.message || 'Failed to resend OTP',
+      code: error.code
+    };
+  }
+};
+
+/**
+ * Request password reset (forgot password)
+ * @param {Object} data - Password reset request data
+ * @param {string} data.email - User's email address
+ */
+export const forgotPassword = async (data) => {
+  try {
+    // Send password reset request to backend
+    const response = await authAPI.forgotPassword({
+      email: data.email
+    });
+
+    // Also send via Firebase for email-based users
+    try {
+      await firebaseSendPasswordReset(auth, data.email);
+    } catch (firebaseError) {
+      console.warn('Firebase password reset email failed:', firebaseError);
+      // Continue even if Firebase fails, backend will handle it
+    }
+
+    return {
+      success: true,
+      message: response.data?.message || 'Password reset link sent to your email!',
+      data: response.data?.data
+    };
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    throw {
+      message: error.response?.data?.message || error.message || 'Failed to send password reset email',
+      code: error.code
+    };
+  }
+};
+
+/**
+ * Reset password with token
+ * @param {Object} data - Password reset data
+ * @param {string} data.token - Reset token from email
+ * @param {string} data.password - New password
+ * @param {string} data.confirmPassword - Confirm new password
+ */
+export const resetPasswordWithToken = async (data) => {
+  try {
+    // Validate passwords match
+    if (data.password !== data.confirmPassword) {
+      throw {
+        message: 'Passwords do not match',
+        code: 'PASSWORD_MISMATCH'
+      };
+    }
+
+    const response = await authAPI.resetPassword({
+      token: data.token,
+      password: data.password
+    });
+
+    return {
+      success: true,
+      message: response.data?.message || 'Password reset successfully! Please login with your new password.',
+      data: response.data?.data
+    };
+  } catch (error) {
+    console.error('Reset password error:', error);
+    throw {
+      message: error.response?.data?.message || error.message || 'Failed to reset password',
       code: error.code
     };
   }
@@ -393,7 +492,10 @@ export default {
   signInWithGoogle,
   signInWithApple,
   logout,
-  resetPassword,
+  verifyOTP,
+  resendOTP,
+  forgotPassword,
+  resetPasswordWithToken,
   getCurrentFirebaseUser,
   getFirebaseToken,
   isAuthenticated,

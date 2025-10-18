@@ -1,9 +1,23 @@
 import axios from 'axios';
 
 // Base API URL - Get from environment variables
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// Prioritizes production API if in production mode
+const getApiUrl = () => {
+  const env = import.meta.env.MODE;
+  
+  if (env === 'development') {
+    // Local development - connect to local backend
+    return import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+  } else {
+    // Production - yoraa.in connects to api.yoraa.in.net
+    return import.meta.env.VITE_API_URL || 'https://api.yoraa.in.net/api';
+  }
+};
 
-console.log('🔗 API URL:', API_URL);
+const API_URL = getApiUrl();
+
+console.log('🌐 Environment:', import.meta.env.MODE);
+console.log('🔗 Connecting to API:', API_URL);
 
 // Create axios instance with default configuration
 const api = axios.create({
@@ -12,6 +26,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 30000, // 30 seconds
+  withCredentials: false, // Set to true if backend requires cookies
 });
 
 // Request interceptor - Add auth token to all requests

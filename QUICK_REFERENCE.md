@@ -1,6 +1,36 @@
-# 🚀 Yoraa.in API - Quick Reference
+# 🎯 QUICK REFERENCE - Backend Connection
 
-## 📡 Base URLs
+**Status**: ✅ **ALL FIXED & CONNECTED** (Oct 19, 2025)
+
+---
+
+## � Endpoint Quick Reference
+
+| Feature | Frontend Calls | Backend Has | Status |
+|---------|---------------|-------------|--------|
+| **Register** | `/auth/signup` | `/auth/signup` | ✅ FIXED |
+| **Login** | `/auth/login` | `/auth/login` | ✅ FIXED |
+| **Social Login** | `/auth/login/firebase` | `/auth/login/firebase` | ✅ FIXED |
+| **Verify OTP** | `/auth/verifyOtp` | `/auth/verifyOtp` | ✅ FIXED |
+| **Resend OTP** | `/auth/generate-otp` | `/auth/generate-otp` | ✅ FIXED |
+| **Reset Password** | `/auth/resetPassword` | `/auth/resetPassword` | ✅ FIXED |
+| **Logout** | `/auth/logout` | `/auth/logout` | ✅ WORKS |
+| **Refresh Token** | `/auth/refresh-token` | `/auth/refresh-token` | ✅ WORKS |
+
+---
+
+## 🔑 Field Name Mapping
+
+| Frontend Uses | Backend Expects | Auto-Converted |
+|--------------|----------------|----------------|
+| `phone` | `phNo` | ✅ Yes |
+| `identifier` | `email` OR `phNo` | ✅ Yes |
+| `phone` (OTP) | `phoneNumber` | ✅ Yes |
+| `password` | `newPassword` (reset) | ✅ Yes |
+
+---
+
+## API Base URLs
 ```javascript
 Local:      http://localhost:8000/api
 Production: https://api.yoraa.in.net/api

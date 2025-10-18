@@ -2,68 +2,138 @@ import api from './api';
 
 /**
  * Authentication API endpoints
+ * NOTE: Updated to match actual backend implementation (Oct 19, 2025)
+ * Backend uses /signup instead of /register, phNo instead of phone, etc.
  */
 export const authAPI = {
   /**
    * Register a new user
+   * BACKEND ENDPOINT: POST /auth/signup (not /register)
    * @param {Object} data - User registration data
    * @param {string} data.name - User's full name
    * @param {string} data.email - User's email address
-   * @param {string} data.phone - User's phone number
+   * @param {string} data.phone - User's phone number (converted to phNo for backend)
    * @param {string} data.password - User's password
    */
-  register: (data) => api.post('/auth/register', data),
+  register: (data) => api.post('/auth/signup', {
+    name: data.name,
+    email: data.email,
+    phNo: data.phone || data.phNo, // Backend expects 'phNo' not 'phone'
+    password: data.password,
+    firebaseUid: data.firebaseUid,
+    firebaseToken: data.firebaseToken
+  }),
 
   /**
    * Login user with email/phone and password
+   * BACKEND ENDPOINT: POST /auth/login
+   * Backend expects separate 'email' OR 'phNo' fields (not 'identifier')
    * @param {Object} credentials - Login credentials
-   * @param {string} credentials.phone - Phone number or email
+   * @param {string} credentials.identifier - Email or phone number
+   * @param {string} credentials.email - Email (alternative)
+   * @param {string} credentials.phone - Phone (alternative)
    * @param {string} credentials.password - Password
    */
-  login: (credentials) => api.post('/auth/login', credentials),
+  login: (credentials) => {
+    // Detect if using email or phone
+    const identifier = credentials.identifier || credentials.email || credentials.phone;
+    const isEmail = identifier && identifier.includes('@');
+    
+    return api.post('/auth/login', {
+      ...(isEmail 
+        ? { email: identifier }
+        : { phNo: identifier }
+      ),
+      password: credentials.password,
+      firebaseToken: credentials.firebaseToken,
+      firebaseUid: credentials.firebaseUid
+    });
+  },
 
   /**
-   * Social login (Google/Apple)
+   * Social login (Google/Apple/Facebook)
+   * BACKEND ENDPOINT: POST /auth/login/firebase (not /social-login)
    * @param {Object} data - Social login data
-   * @param {string} data.provider - 'google' or 'apple'
-   * @param {string} data.token - Social provider token
+   * @param {string} data.idToken - Firebase ID token
+   * @param {string} data.provider - 'google', 'apple', or 'facebook' (optional)
    */
-  socialLogin: (data) => api.post('/auth/social-login', data),
+  socialLogin: (data) => api.post('/auth/login/firebase', {
+    idToken: data.idToken || data.firebaseToken || data.token
+  }),
 
   /**
    * Verify OTP
+   * BACKEND ENDPOINT: POST /auth/verifyOtp (camelCase, not kebab-case)
    * @param {Object} data - OTP verification data
-   * @param {string} data.phone - Phone number
+   * @param {string} data.phone - Phone number (converted to phoneNumber for backend)
    * @param {string} data.otp - OTP code
    */
-  verifyOTP: (data) => api.post('/auth/verify-otp', data),
+  verifyOTP: (data) => api.post('/auth/verifyOtp', {
+    phoneNumber: data.phone || data.phoneNumber || data.phNo,
+    otp: data.otp
+  }),
 
   /**
    * Resend OTP
+   * BACKEND ENDPOINT: POST /auth/generate-otp (not /resend-otp)
    * @param {Object} data - Phone number
    * @param {string} data.phone - Phone number to send OTP
    */
-  resendOTP: (data) => api.post('/auth/resend-otp', data),
+  resendOTP: (data) => api.post('/auth/generate-otp', {
+    phoneNumber: data.phone || data.phoneNumber || data.phNo
+  }),
 
   /**
    * Logout user
+   * BACKEND ENDPOINT: POST /auth/logout ✅ (matches)
    */
   logout: () => api.post('/auth/logout'),
 
   /**
    * Request password reset
+   * BACKEND STATUS: Email-based reset NOT implemented yet
+   * Backend only supports phone-based reset via /auth/resetPassword
    * @param {Object} data - Password reset request data
    * @param {string} data.email - User's email address
+   * @param {string} data.phone - User's phone (for phone-based reset)
    */
-  forgotPassword: (data) => api.post('/auth/forgot-password', data),
+  forgotPassword: (data) => {
+    if (data.email && !data.phone) {
+      // Email-based reset not available in backend yet
+      return Promise.reject({
+        response: {
+          data: {
+            message: 'Password reset via email is not yet available. Please use phone number.',
+            success: false,
+            statusCode: 501
+          }
+        }
+      });
+    }
+    // Use phone-based reset
+    return api.post('/auth/resetPassword', {
+      phNo: data.phone || data.phNo
+    });
+  },
 
   /**
-   * Reset password with token
+   * Reset password
+   * BACKEND ENDPOINT: POST /auth/resetPassword (camelCase, phone-based only)
+   * Token-based reset not implemented in backend yet
    * @param {Object} data - Password reset data
-   * @param {string} data.token - Reset token from email
-   * @param {string} data.password - New password
+   * @param {string} data.phone - Phone number
+   * @param {string} data.newPassword - New password
    */
-  resetPassword: (data) => api.post('/auth/reset-password', data),
+  resetPassword: (data) => api.post('/auth/resetPassword', {
+    phNo: data.phone || data.phNo,
+    newPassword: data.newPassword || data.password
+  }),
+
+  /**
+   * Refresh authentication token
+   * BACKEND ENDPOINT: POST /auth/refresh-token ✅ (matches)
+   */
+  refreshToken: () => api.post('/auth/refresh-token'),
 };
 
 /**

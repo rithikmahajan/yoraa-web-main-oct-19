@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test - FIXED</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .status.fixed {
+            background: #10b981;
+            color: white;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .result {
+            background: #f7f7f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .result pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .success {
+            border-left-color: #10b981;
+            background: #d1fae5;
+        }
+        
+        .error {
+            border-left-color: #ef4444;
+            background: #fee2e2;
+        }
+        
+        .icon {
+            font-size: 24px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 15px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .badge.new {
+            background: #10b981;
+            color: white;
+        }
+        
+        .badge.changed {
+            background: #f59e0b;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Backend Connection Test - FIXED VERSION</h1>
+            <p style="color: #666; margin: 10px 0;">
+                All endpoints updated to match actual backend implementation
+            </p>
+            <span class="status fixed">✅ FIXED & READY</span>
+            <p style="margin-top: 15px; font-size: 14px;">
+                <strong>API URL:</strong> <span id="apiUrl">Loading...</span>
+            </p>
+        </div>
+
+        <div class="grid">
+            <!-- Registration Test -->
+            <div class="card">
+                <h3>
+                    <span class="icon">📝</span>
+                    Register User
+                    <span class="badge changed">FIXED</span>
+                </h3>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
+                    Now uses: POST /auth/signup with 'phNo' field
+                </p>
+                <div class="input-group">
+                    <label>Name</label>
+                    <input type="text" id="regName" placeholder="John Doe">
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" placeholder="john@example.com">
+                </div>
+                <div class="input-group">
+                    <label>Phone</label>
+                    <input type="tel" id="regPhone" placeholder="9876543210">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" placeholder="Password123!">
+                </div>
+                <button class="btn" onclick="testRegister()">Test Register</button>
+                <div id="regResult"></div>
+            </div>
+
+            <!-- Login Test -->
+            <div class="card">
+                <h3>
+                    <span class="icon">🔑</span>
+                    Login User
+                    <span class="badge changed">FIXED</span>
+                </h3>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
+                    Now sends 'email' OR 'phNo' separately (not 'identifier')
+                </p>
+                <div class="input-group">
+                    <label>Email or Phone</label>
+                    <input type="text" id="loginIdentifier" placeholder="email@example.com or 9876543210">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Password123!">
+                </div>
+                <button class="btn" onclick="testLogin()">Test Login</button>
+                <div id="loginResult"></div>
+            </div>
+
+            <!-- Social Login Test -->
+            <div class="card">
+                <h3>
+                    <span class="icon">🔐</span>
+                    Social Login
+                    <span class="badge changed">FIXED</span>
+                </h3>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
+                    Now uses: POST /auth/login/firebase (only idToken needed)
+                </p>
+                <div class="input-group">
+                    <label>Firebase ID Token</label>
+                    <input type="text" id="socialToken" placeholder="Firebase ID Token">
+                </div>
+                <button class="btn" onclick="testSocialLogin()">Test Social Login</button>
+                <div id="socialResult"></div>
+            </div>
+
+            <!-- OTP Verification Test -->
+            <div class="card">
+                <h3>
+                    <span class="icon">📱</span>
+                    Verify OTP
+                    <span class="badge changed">FIXED</span>
+                </h3>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
+                    Now uses: POST /auth/verifyOtp with 'phoneNumber'
+                </p>
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="verifyPhone" placeholder="9876543210">
+                </div>
+                <div class="input-group">
+                    <label>OTP</label>
+                    <input type="text" id="verifyOtp" placeholder="123456">
+                </div>
+                <button class="btn" onclick="testVerifyOTP()">Test Verify OTP</button>
+                <div id="verifyResult"></div>
+            </div>
+
+            <!-- Resend OTP Test -->
+            <div class="card">
+                <h3>
+                    <span class="icon">🔄</span>
+                    Resend OTP
+                    <span class="badge changed">FIXED</span>
+                </h3>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
+                    Now uses: POST /auth/generate-otp
+                </p>
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="resendPhone" placeholder="9876543210">
+                </div>
+                <button class="btn" onclick="testResendOTP()">Test Resend OTP</button>
+                <div id="resendResult"></div>
+            </div>
+
+            <!-- Password Reset Test -->
+            <div class="card">
+                <h3>
+                    <span class="icon">🔒</span>
+                    Reset Password
+                    <span class="badge changed">FIXED</span>
+                </h3>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
+                    Now uses: POST /auth/resetPassword (phone-based only)
+                </p>
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="resetPhone" placeholder="9876543210">
+                </div>
+                <div class="input-group">
+                    <label>New Password</label>
+                    <input type="password" id="resetPassword" placeholder="NewPassword123!">
+                </div>
+                <button class="btn" onclick="testResetPassword()">Test Reset Password</button>
+                <div id="resetResult"></div>
+            </div>
+        </div>
+
+        <!-- Test All Button -->
+        <div class="card" style="margin-top: 20px; text-align: center;">
+            <h3>🚀 Run All Tests</h3>
+            <p style="color: #666; margin-bottom: 15px;">Test all endpoints with dummy data (will fail auth but shows connectivity)</p>
+            <button class="btn" onclick="testAll()" style="font-size: 16px; padding: 15px 40px;">Test All Endpoints</button>
+        </div>
+    </div>
+
+    <script>
+        // Backend API URL
+        const API_URL = 'https://api.yoraa.in.net/api';
+        // For local testing, uncomment:
+        // const API_URL = 'http://localhost:8000/api';
+        
+        document.getElementById('apiUrl').textContent = API_URL;
+
+        // Helper function to display results
+        function displayResult(elementId, data, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.className = isSuccess ? 'result success' : 'result error';
+            element.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        // Test Register (FIXED)
+        async function testRegister() {
+            const name = document.getElementById('regName').value || 'Test User';
+            const email = document.getElementById('regEmail').value || 'test@example.com';
+            const phone = document.getElementById('regPhone').value || '9876543210';
+            const password = document.getElementById('regPassword').value || 'Test123!';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        phNo: phone, // FIXED: Changed from 'phone' to 'phNo'
+                        password
+                    })
+                });
+                
+                const data = await response.json();
+                displayResult('regResult', data, response.ok);
+            } catch (error) {
+                displayResult('regResult', { error: error.message }, false);
+            }
+        }
+
+        // Test Login (FIXED)
+        async function testLogin() {
+            const identifier = document.getElementById('loginIdentifier').value || 'test@example.com';
+            const password = document.getElementById('loginPassword').value || 'Test123!';
+            
+            // FIXED: Detect if email or phone and send separately
+            const isEmail = identifier.includes('@');
+            const body = {
+                [isEmail ? 'email' : 'phNo']: identifier,
+                password
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                const data = await response.json();
+                displayResult('loginResult', data, response.ok);
+            } catch (error) {
+                displayResult('loginResult', { error: error.message }, false);
+            }
+        }
+
+        // Test Social Login (FIXED)
+        async function testSocialLogin() {
+            const token = document.getElementById('socialToken').value || 'dummy_firebase_token';
+
+            try {
+                // FIXED: Changed endpoint from /social-login to /login/firebase
+                const response = await fetch(`${API_URL}/auth/login/firebase`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        idToken: token // FIXED: Only send idToken
+                    })
+                });
+                
+                const data = await response.json();
+                displayResult('socialResult', data, response.ok);
+            } catch (error) {
+                displayResult('socialResult', { error: error.message }, false);
+            }
+        }
+
+        // Test Verify OTP (FIXED)
+        async function testVerifyOTP() {
+            const phone = document.getElementById('verifyPhone').value || '9876543210';
+            const otp = document.getElementById('verifyOtp').value || '123456';
+
+            try {
+                // FIXED: Changed endpoint from /verify-otp to /verifyOtp
+                const response = await fetch(`${API_URL}/auth/verifyOtp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phoneNumber: phone, // FIXED: Changed from 'phone' to 'phoneNumber'
+                        otp
+                    })
+                });
+                
+                const data = await response.json();
+                displayResult('verifyResult', data, response.ok);
+            } catch (error) {
+                displayResult('verifyResult', { error: error.message }, false);
+            }
+        }
+
+        // Test Resend OTP (FIXED)
+        async function testResendOTP() {
+            const phone = document.getElementById('resendPhone').value || '9876543210';
+
+            try {
+                // FIXED: Changed endpoint from /resend-otp to /generate-otp
+                const response = await fetch(`${API_URL}/auth/generate-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phoneNumber: phone // FIXED: Changed from 'phone' to 'phoneNumber'
+                    })
+                });
+                
+                const data = await response.json();
+                displayResult('resendResult', data, response.ok);
+            } catch (error) {
+                displayResult('resendResult', { error: error.message }, false);
+            }
+        }
+
+        // Test Reset Password (FIXED)
+        async function testResetPassword() {
+            const phone = document.getElementById('resetPhone').value || '9876543210';
+            const password = document.getElementById('resetPassword').value || 'NewPass123!';
+
+            try {
+                // FIXED: Changed endpoint from /reset-password to /resetPassword
+                const response = await fetch(`${API_URL}/auth/resetPassword`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phNo: phone, // FIXED: Changed from 'phone' to 'phNo'
+                        newPassword: password
+                    })
+                });
+                
+                const data = await response.json();
+                displayResult('resetResult', data, response.ok);
+            } catch (error) {
+                displayResult('resetResult', { error: error.message }, false);
+            }
+        }
+
+        // Test All Endpoints
+        async function testAll() {
+            alert('Testing all endpoints with dummy data. Check individual result boxes below.');
+            await testRegister();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testLogin();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testSocialLogin();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testVerifyOTP();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testResendOTP();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testResetPassword();
+        }
+
+        console.log('✅ Backend connection test page loaded - All endpoints FIXED!');
+        console.log('📡 API URL:', API_URL);
+        console.log('🔧 Changes made:');
+        console.log('  - /register → /signup');
+        console.log('  - phone → phNo');
+        console.log('  - /social-login → /login/firebase');
+        console.log('  - /verify-otp → /verifyOtp');
+        console.log('  - phone → phoneNumber (OTP)');
+        console.log('  - /resend-otp → /generate-otp');
+        console.log('  - /reset-password → /resetPassword');
+    </script>
+</body>
+</html>
