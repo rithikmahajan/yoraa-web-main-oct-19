@@ -1,29 +1,16 @@
-import React, { useRef, useState } from "react";
-import eyeLogo from "../../assets/eye.png";
+import { useRef, useState } from "react";
 import googleLogo from "../../assets/google.png";
 import appleLogo from "../../assets/apple.png";
 import { Link, useNavigate } from "react-router"; // Fixed import
 
 const SignupPhone = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [activeOption, setActiveOption] = useState("phone");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState(["", "", "", ""]); // State for 4 OTP digits
   const [isSubscribed, setIsSubscribed] = useState(true); // State for checkbox
   const inputRefs = useRef([]); // Refs for OTP inputs
 
   const navigate = useNavigate();
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
 
   const handleOtpChange = (index, value) => {
     if (/^[0-9]?$/.test(value)) { // Allow only single digit
@@ -53,8 +40,6 @@ const SignupPhone = () => {
     const fullOtp = otp.join(""); // Combine OTP digits
     console.log("Phone:", mobile);
     console.log("OTP:", fullOtp);
-    console.log("Password:", password);
-    console.log("Confirm Password:", confirmPassword);
     console.log("Subscribed to emails:", isSubscribed);
     // Add API call or navigation logic here
   }
@@ -114,7 +99,10 @@ const SignupPhone = () => {
             <span className="font-medium">Phone</span>
           </button>
           <button
-            onClick={() => setActiveOption("email")}
+            onClick={() => {
+              navigate("/signup");
+              setActiveOption("email");
+            }}
             className={
               activeOption === "email"
                 ? "relative flex items-center pl-5 pr-4 py-2 rounded-full transition-all duration-300 ease-in-out -ml-[19px] text-white bg-black shadow-md border-2 border-black z-20"
@@ -133,36 +121,6 @@ const SignupPhone = () => {
             value={mobile}
             onChange={(e) => setMobile(e.target.value)}
           />
-          <div className="relative">
-            <input
-              className="px-2 py-1 rounded-lg border-2 border-black w-full"
-              placeholder="Password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <img
-              src={eyeLogo}
-              alt="toggle visibility"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer"
-              onClick={togglePasswordVisibility}
-            />
-          </div>
-          <div className="relative">
-            <input
-              className="px-2 py-1 rounded-lg border-2 border-black w-full"
-              placeholder="Confirm Password"
-              type={showConfirmPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            <img
-              src={eyeLogo}
-              alt="toggle visibility"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer"
-              onClick={toggleConfirmPasswordVisibility}
-            />
-          </div>
           <p className="text-gray-500 text-xs text-center">
             Please enter the verification code we sent to your number
           </p>

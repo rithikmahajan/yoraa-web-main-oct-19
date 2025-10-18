@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yoraa API Connection Test</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background: #f9f9f9;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .result {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .status.online {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status.offline {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .config-box {
+      background: #f8f9fa;
+      padding: 15px;
+      border-left: 4px solid #007bff;
+      margin: 20px 0;
+    }
+    .config-box code {
+      background: #e9ecef;
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: #d63384;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Yoraa API Connection Test</h1>
+    <p class="subtitle">Test your backend API connection</p>
+
+    <div class="config-box">
+      <strong>Current API URL:</strong> <code id="apiUrl">Loading...</code>
+      <span id="status" class="status">Checking...</span>
+    </div>
+
+    <div class="test-section">
+      <h3>Quick Tests</h3>
+      <button onclick="testConnection()">Test Connection</button>
+      <button onclick="testProducts()">Test Products API</button>
+      <button onclick="testCategories()">Test Categories API</button>
+      <button onclick="testConfig()">Test Config API</button>
+      <button onclick="runAllTests()">Run All Tests</button>
+      <div id="testResult"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>Authentication Test</h3>
+      <p style="font-size: 13px; color: #666;">Note: These will fail without valid credentials (expected behavior)</p>
+      <button onclick="testAuthEndpoints()">Test Auth Endpoints</button>
+      <div id="authResult"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>Console</h3>
+      <div id="console" class="result info">Ready to test... Click a button above to start.</div>
+    </div>
+
+    <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 5px;">
+      <strong>💡 Tip:</strong> Make sure your backend is running on <code>http://localhost:8000</code> before testing.
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:8000/api';
+    let consoleDiv = document.getElementById('console');
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      consoleDiv.innerHTML += `\n[${timestamp}] ${message}`;
+      consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+
+    function clearConsole() {
+      consoleDiv.innerHTML = '';
+    }
+
+    function showResult(elementId, message, isSuccess) {
+      const element = document.getElementById(elementId);
+      element.innerHTML = `<div class="result ${isSuccess ? 'success' : 'error'}">${message}</div>`;
+    }
+
+    // Display current API URL
+    document.getElementById('apiUrl').textContent = API_URL;
+
+    // Test connection
+    async function testConnection() {
+      clearConsole();
+      log('🔍 Testing backend connection...');
+      
+      try {
+        const response = await fetch(`${API_URL}/config/razorpay-key`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          log('✅ Backend connected successfully!', 'success');
+          log(`Response: ${JSON.stringify(data, null, 2)}`);
+          showResult('testResult', '✅ Connection successful!', true);
+          updateStatus(true);
+        } else {
+          throw new Error(data.message || 'Connection failed');
+        }
+      } catch (error) {
+        log(`❌ Connection failed: ${error.message}`, 'error');
+        showResult('testResult', `❌ Connection failed: ${error.message}`, false);
+        updateStatus(false);
+      }
+    }
+
+    // Test products API
+    async function testProducts() {
+      clearConsole();
+      log('🔍 Testing products API...');
+      
+      try {
+        const response = await fetch(`${API_URL}/items?page=1&limit=5`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          const products = data.data?.data || data.data || [];
+          log(`✅ Products fetched: ${products.length} items`);
+          log(`Response: ${JSON.stringify(products.slice(0, 2), null, 2)}`);
+          showResult('testResult', `✅ Found ${products.length} products!`, true);
+        } else {
+          throw new Error(data.message || 'Failed to fetch products');
+        }
+      } catch (error) {
+        log(`❌ Products fetch failed: ${error.message}`, 'error');
+        showResult('testResult', `❌ Error: ${error.message}`, false);
+      }
+    }
+
+    // Test categories API
+    async function testCategories() {
+      clearConsole();
+      log('🔍 Testing categories API...');
+      
+      try {
+        const response = await fetch(`${API_URL}/categories`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          const categories = data.data || [];
+          log(`✅ Categories fetched: ${categories.length} items`);
+          log(`Response: ${JSON.stringify(categories, null, 2)}`);
+          showResult('testResult', `✅ Found ${categories.length} categories!`, true);
+        } else {
+          throw new Error(data.message || 'Failed to fetch categories');
+        }
+      } catch (error) {
+        log(`❌ Categories fetch failed: ${error.message}`, 'error');
+        showResult('testResult', `❌ Error: ${error.message}`, false);
+      }
+    }
+
+    // Test config API
+    async function testConfig() {
+      clearConsole();
+      log('🔍 Testing config API...');
+      
+      try {
+        const response = await fetch(`${API_URL}/config/razorpay-key`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          log('✅ Config fetched successfully');
+          log(`Response: ${JSON.stringify(data, null, 2)}`);
+          showResult('testResult', '✅ Config API working!', true);
+        } else {
+          throw new Error(data.message || 'Failed to fetch config');
+        }
+      } catch (error) {
+        log(`❌ Config fetch failed: ${error.message}`, 'error');
+        showResult('testResult', `❌ Error: ${error.message}`, false);
+      }
+    }
+
+    // Test auth endpoints (will fail without credentials)
+    async function testAuthEndpoints() {
+      clearConsole();
+      log('🔍 Testing authentication endpoints...');
+      log('⚠️  Note: These tests are expected to fail without valid credentials');
+      
+      try {
+        // Test register endpoint
+        log('\n📝 Testing /auth/register...');
+        const registerResponse = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Test User',
+            email: 'test@example.com',
+            phone: '1234567890',
+            password: 'test123'
+          })
+        });
+        log(`Register endpoint status: ${registerResponse.status}`);
+
+        // Test login endpoint
+        log('\n📝 Testing /auth/login...');
+        const loginResponse = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: '1234567890',
+            password: 'test123'
+          })
+        });
+        log(`Login endpoint status: ${loginResponse.status}`);
+
+        log('\n✅ Auth endpoints are reachable!');
+        showResult('authResult', '✅ Auth endpoints are accessible (responses received)', true);
+      } catch (error) {
+        log(`❌ Auth test failed: ${error.message}`, 'error');
+        showResult('authResult', `❌ Error: ${error.message}`, false);
+      }
+    }
+
+    // Run all tests
+    async function runAllTests() {
+      clearConsole();
+      log('🚀 Running all API tests...\n');
+      
+      await testConnection();
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      await testProducts();
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      await testCategories();
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      await testConfig();
+      
+      log('\n✅ All tests complete!');
+    }
+
+    // Update connection status
+    function updateStatus(isOnline) {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = isOnline ? 'Online' : 'Offline';
+      statusEl.className = `status ${isOnline ? 'online' : 'offline'}`;
+    }
+
+    // Test connection on load
+    window.addEventListener('load', () => {
+      setTimeout(testConnection, 500);
+    });
+  </script>
+</body>
+</html>
